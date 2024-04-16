@@ -1,0 +1,16 @@
+{% extends "page.twig" %}
+
+{% block content %}  
+<container>
+    <div class="content {{ page_name }}_content">
+        contenu de PAGECONTENT.twig - on affiche les sections. peut-on mettre section_x ectends section pour ouvoir gérer un modèle section.twig commun à toutes les sections ??
+        affichage des sections
+        {% for section in sections %}
+        <section class="{{ section.name }}" id="{{ section.id }}">
+         {% include section.section_content %}
+
+        </section>
+    {% endfor %}
+    </div>
+<container>
+{% endblock %}

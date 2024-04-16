@@ -1,0 +1,127 @@
+
+<footer  class="footer">
+    <div class="content {{ page_name }}_content">
+    legals cgv facebook instagram
+    </div>
+ </footer>
+ </page>
+ <script>
+     //const initPrompt = document.querySelector("#send-btn");
+
+    let conversationHistory = [];
+
+    const chatBox = document.querySelector(".chat-box");
+    const messageInput = document.querySelector("#message-input");
+    const sendBtn = document.querySelector("#send-btn");
+
+    function addMessage(message, isUserMessage) {
+    const messageDiv = document.createElement("div");
+
+    if (isUserMessage) {
+        messageDiv.classList.add("user-message");
+        messageDiv.innerHTML = `<p><span class='bot'>Vous : </span>${message}</p>`;
+        conversationHistory.push({ role: 'user', content: message });
+    } else {
+        messageDiv.classList.add("bot-message");
+        messageDiv.innerHTML = `<p><span class='bot'>Anna : </span>${message}</p>`;
+        conversationHistory.push({ role: 'assistant', content: message });
+    }
+
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+
+function sendMessage() {
+    const userMessage = messageInput.value.trim();
+
+    if (userMessage !== "") {
+        addMessage(userMessage, true);
+
+        fetch('http://localhost:7502/oai_assistant.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ conversationHistory: conversationHistory, apikey: "votre_clé_api", model: "gpt-3.5-turbo" }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                addMessage(data.message, false);
+                conversationHistory.push({ role: 'assistant', content: data.message });
+            } else if (data.error) {
+                console.error('Error:', data.error);
+                addMessage(data.error, false);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+
+        messageInput.value = ""; // Efface le champ de saisie après l'envoi
+    }
+}
+
+  /*
+    function addMessage(message, isUserMessage) {
+      const messageDiv = document.createElement("div");
+  
+      if (isUserMessage) {
+        messageDiv.classList.add("user-message");
+        conversationHistory.push({ role: 'user', content: message });
+
+      } else {
+        messageDiv.classList.add("bot-message");
+        conversationHistory.push({ role: 'assistant', content: message });
+      }
+      console.log("hist ",conversationHistory);
+  
+      messageDiv.innerHTML = `<p>${message}</p>`;
+  
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  
+    function sendMessage() {
+      const userMessage = messageInput.value.trim();
+      //console.log ("message ", userMessage, conversationHistory);
+  
+      if (userMessage !== "") {
+        addMessage("<span class='bot'>Vous : "+userMessage, true);
+  
+        // Ici, vous devez envoyer le message à votre serveur PHP, qui enverra le message à l'API OpenAI
+        // et recevra la réponse. Cela nécessite une requête AJAX ou l'utilisation de l'API Fetch.
+  
+        fetch('http://localhost:7502/oai_assistant.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: userMessage, conversationHistory:conversationHistory }),
+        })
+        .then(response => response.json())
+        
+        .then(data => {
+           console.log('resp ',data);
+          addMessage(data, false);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+  
+        messageInput.value = ""; // Efface le champ de saisie après l'envoi
+      }
+    }
+  */
+    sendBtn.addEventListener("click", sendMessage);
+    messageInput.addEventListener("keydown", event => {
+      if (event.keyCode === 13 && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+  
+ </body>
+ </html>
